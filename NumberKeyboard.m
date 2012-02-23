@@ -1,15 +1,16 @@
 //
 //  NumberKeyboard.m
+//  Optimis Sport
 //
-//  Created by Stuart Moore (@at_underscore) on 2/17/12.
-//  Copyright (c) 2012 stuartjmoore. All rights reserved.
+//  Created by Stuart Moore on 2/17/12.
+//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
 #import "NumberKeyboard.h"
 
 @implementation NumberKeyboard
 
-@synthesize textField = _textField, showsPeriod = _showsPeriod;
+@synthesize textField = _textField, showsPeriod = _showsPeriod, showsMinus = _showsMinus;
 
 - (void)viewDidLoad
 {
@@ -26,6 +27,7 @@
     [keyNine setBackgroundImage:[[keyNine backgroundImageForState:UIControlStateNormal] stretchableImageWithLeftCapWidth:8 topCapHeight:79] forState:UIControlStateNormal];
     [keyZero setBackgroundImage:[[keyZero backgroundImageForState:UIControlStateNormal] stretchableImageWithLeftCapWidth:8 topCapHeight:79] forState:UIControlStateNormal];
     [keyPeriod setBackgroundImage:[[keyPeriod backgroundImageForState:UIControlStateNormal] stretchableImageWithLeftCapWidth:8 topCapHeight:79] forState:UIControlStateNormal];
+    [keyMinus setBackgroundImage:[[keyMinus backgroundImageForState:UIControlStateNormal] stretchableImageWithLeftCapWidth:8 topCapHeight:79] forState:UIControlStateNormal];
     [keyBack setBackgroundImage:[[keyBack backgroundImageForState:UIControlStateNormal] stretchableImageWithLeftCapWidth:8 topCapHeight:79] forState:UIControlStateNormal];
     [keyReturn setBackgroundImage:[[keyReturn backgroundImageForState:UIControlStateNormal] stretchableImageWithLeftCapWidth:8 topCapHeight:251] forState:UIControlStateNormal];
 }
@@ -35,11 +37,47 @@
     [super viewWillAppear:animated];
     
     keyPeriod.hidden = !self.showsPeriod;
+    
+    keyMinus.hidden = !self.showsMinus;
+    keyMinus.selected = [self.textField.text hasPrefix:@"-"];
+}
+
+- (IBAction)playKeySound:(UIButton*)sender
+{
+    CFURLRef soundFileURLRef = CFBundleCopyResourceURL(CFBundleGetBundleWithIdentifier(
+                                                       CFSTR("com.apple.UIKit")), 
+                                                       CFSTR("Tock"),CFSTR("aiff"), NULL);
+    
+    SystemSoundID soundID;
+    AudioServicesCreateSystemSoundID(soundFileURLRef, &soundID);
+    AudioServicesPlaySystemSound(soundID);
 }
 
 - (IBAction)keyPressed:(UIButton*)sender
 {
     self.textField.text = [self.textField.text stringByAppendingString:sender.titleLabel.text];
+}
+
+- (IBAction)minusToggled:(UIButton*)sender
+{
+    keyMinus.selected = !keyMinus.selected;
+    
+    if([self.textField.text hasPrefix:@"-"])
+        self.textField.text = [self.textField.text stringByReplacingOccurrencesOfString:@"-" withString:@""];
+    else
+        self.textField.text = [@"-" stringByAppendingString:self.textField.text];
+}
+
+- (IBAction)periodToggled:(UIButton*)sender
+{
+    if(!self.textField.text || [self.textField.text isEqualToString:@""])
+        self.textField.text = @"0";
+    
+    if([self.textField.text isEqualToString:@"-"])
+        self.textField.text = @"-0";
+    
+    self.textField.text = [self.textField.text stringByReplacingOccurrencesOfString:@"." withString:@""];
+    self.textField.text = [self.textField.text stringByAppendingString:@"."];
 }
 
 - (IBAction)backspacePressed:(UIButton*)sender
@@ -53,7 +91,6 @@
     [self.textField.delegate textFieldShouldReturn:self.textField];
 }
 
-// iOS 5 only
 - (void)viewWillLayoutSubviews
 {
     if(UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
