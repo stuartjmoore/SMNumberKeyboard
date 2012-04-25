@@ -8,3 +8,6 @@ To use:
     youTextField.inputView = keyboard.view;
 
 Also, release the keyboard in dealloc and include "NumberKeyboard.h".
+
+
+Licensed under: do whatever you want.
